@@ -9,7 +9,7 @@ from torchmetrics.functional import f1_score, precision, recall
 import wandb
 
 from models.lit_punctuator import LitPunctuator
-from config import label2char
+from utils.text import get_text_with_cap_from_predictions
 
 
 class LitTwoHead(LitPunctuator):
@@ -73,36 +73,12 @@ class LitTwoHead(LitPunctuator):
             for i in range(5):
                 tokens = self.tokenizer.convert_ids_to_tokens(input_ids[i], skip_special_tokens=True)
                 true_labels = labels.view(labels_size)[i, 1:len(tokens)].cpu().detach().tolist()
-                true_cap = capitalization.view(capitalization_size)[i, 1:len(tokens)].cpu().detach().tolist()
+                true_capitalization = capitalization.view(capitalization_size)[i, 1:len(tokens)].cpu().detach().tolist()
                 pred_labels = torch.argmax(pred.view(pred_size), dim=-1)[i, 1:len(tokens)].cpu().detach().tolist()
                 pred_capitalization = torch.argmax(pred_cap.view(pred_cap_size), dim=-1)[i, 1:len(tokens)].cpu().detach().tolist()
 
-                input_sentence = ""
-                pred_sentence = ""
-                for token, true_punct, pred_punct, true_c, pred_c in zip(tokens, true_labels, pred_labels, true_cap, pred_capitalization):
-                    if token.startswith("##"):
-                        if pred_c == 2:
-                            pred_sentence = pred_sentence[:-1] + token[2:].upper() + label2char[pred_punct]
-                        else:
-                            pred_sentence = pred_sentence[:-1] + token[2:] + label2char[pred_punct]
-                        if true_c == 2:
-                            input_sentence = input_sentence[:-1] + token[2:].upper() + label2char[true_punct]
-                        else:
-                            input_sentence = input_sentence[:-1] + token[2:] + label2char[true_punct]
-                    else:
-                        if pred_c == 1:
-                            pred_sentence += token.title() + label2char[pred_punct]
-                        elif pred_c == 2:
-                            pred_sentence += token.upper() + label2char[pred_punct]
-                        else:
-                            pred_sentence += token + label2char[pred_punct]
-
-                        if true_c == 1:
-                            input_sentence += token.title() + label2char[true_punct]
-                        elif true_c == 2:
-                            input_sentence += token.upper() + label2char[true_punct]
-                        else:
-                            input_sentence += token + label2char[true_punct]
+                input_sentence = get_text_with_cap_from_predictions(tokens, true_labels, true_capitalization)
+                pred_sentence = get_text_with_cap_from_predictions(tokens, pred_labels, pred_capitalization)
 
                 table.add_data(input_sentence, pred_sentence)
             wandb.log({"examples": table})
@@ -125,9 +101,9 @@ class LitTwoHead(LitPunctuator):
         self.log("test_precision", precision(pred, labels, ignore_index=0), on_step=False, on_epoch=True)
         self.log("test_recall", recall(pred, labels, ignore_index=0), on_step=False, on_epoch=True)
 
-        self.log("test_f1_cap_all", f1_score(pred_cap, capitalization), on_step=True, on_epoch=False)
-        self.log("test_f1_cap", f1_score(pred_cap, capitalization, ignore_index=0), on_step=True, on_epoch=False)
-        self.log("test_precision_cap", precision(pred_cap, capitalization, ignore_index=0), on_step=True, on_epoch=False)
-        self.log("test_recall_cap", recall(pred_cap, capitalization, ignore_index=0), on_step=True, on_epoch=False)
+        self.log("test_f1_cap_all", f1_score(pred_cap, capitalization), on_step=False, on_epoch=True)
+        self.log("test_f1_cap", f1_score(pred_cap, capitalization, ignore_index=0), on_step=False, on_epoch=True)
+        self.log("test_precision_cap", precision(pred_cap, capitalization, ignore_index=0), on_step=False, on_epoch=True)
+        self.log("test_recall_cap", recall(pred_cap, capitalization, ignore_index=0), on_step=False, on_epoch=True)
 
         return pred, labels, pred_cap

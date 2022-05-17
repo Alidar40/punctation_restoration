@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 from torchmetrics.functional import f1_score, precision, recall
 import wandb
 
-from config import label2char
+from utils.text import get_text_from_predictions
 
 
 class LitPunctuator(pl.LightningModule):
@@ -57,15 +57,8 @@ class LitPunctuator(pl.LightningModule):
                 true_labels = labels.view(labels_size)[i, 1:len(tokens)].cpu().detach().tolist()
                 pred_labels = torch.argmax(pred.view(pred_size), dim=-1)[i, 1:len(tokens)].cpu().detach().tolist()
 
-                input_sentence = ""
-                pred_sentence = ""
-                for token, true_punct, pred_punct in zip(tokens, true_labels, pred_labels):
-                    if token.startswith("##"):
-                        input_sentence = input_sentence[:-1] + token[2:] + label2char[true_punct]
-                        pred_sentence = pred_sentence[:-1] + token[2:] + label2char[pred_punct]
-                    else:
-                        input_sentence += token + label2char[true_punct]
-                        pred_sentence += token + label2char[pred_punct]
+                input_sentence = get_text_from_predictions(tokens, true_labels)
+                pred_sentence = get_text_from_predictions(tokens, pred_labels)
 
                 table.add_data(input_sentence, pred_sentence)
             wandb.log({"examples": table})

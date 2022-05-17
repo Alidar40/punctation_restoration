@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 
 from data_processing.augmentations import augmentations
+from utils.text import clean_up
 from config import config, char2label
 
 
@@ -84,16 +85,9 @@ class LentaSet(Dataset):
         return x_aug, y_aug, attention_mask_aug, y_mask_aug, capitalization_aug
 
     def parse_text(self, text):
-        text = text.strip().replace('\n', ' ')
-        text = re.sub(r'[^a-zA-ZА-Яа-я0-9.,!? ]', '', text)
+        text = clean_up(text)
 
-        # text = text.strip().replace('\n', ' ') \
-        #     .replace('«', '\"').replace('»', '\"') \
-        #     .replace('[', '\"').replace(']', '\"')
-        if text[-1] not in ['.', ',', '!', '?']:
-            text += '.'
-        # split = re.split(r"([\ ,.?!:\-\"\(\)])", text)
-        split = re.split(r"([ ,.?!])", text)
+        split = re.split(r'([ .,!?"()\-])', text)
 
         x = self.tokenizer('[CLS]', add_special_tokens=False)['input_ids']
         attention_mask = [1]
