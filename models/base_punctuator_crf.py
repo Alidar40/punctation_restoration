@@ -26,7 +26,7 @@ class BasePunctuatorCRF(nn.Module):
 
         batch_size, seq_len = input_ids.size()
 
-        y_pred = torch.zeros((batch_size, seq_len, len(char2label)))
+        y_pred = torch.zeros((batch_size, seq_len, len(char2label))).to(x.device)
         for i in range(batch_size):
             dec = dec_out[i] + [0 for _ in range(seq_len - len(dec_out[i]))]
             for j in range(seq_len):

@@ -15,18 +15,20 @@ class LitTwoHead(LitPunctuator):
 
     def training_step(self, batch, batch_idx):
         input_ids, labels, attention_mask, labels_mask, capitalization = batch
-        pred, pred_cap = self(input_ids, attention_mask, labels, capitalization)
+        pred, pred_cap = self(input_ids, attention_mask)
 
         if self.use_crf:
             loss = self.punctuator.log_likelihood(input_ids, attention_mask, labels, capitalization)
+            pred = pred.view(-1, pred.shape[2])
+            pred_cap = pred_cap.view(-1, pred_cap.shape[2])
+            labels = labels.view(-1)
+            capitalization = capitalization.view(-1)
         else:
+            pred = pred.view(-1, pred.shape[2])
+            pred_cap = pred_cap.view(-1, pred_cap.shape[2])
+            labels = labels.view(-1)
+            capitalization = capitalization.view(-1)
             loss = F.cross_entropy(pred, labels) + F.cross_entropy(pred_cap, capitalization)
-
-        pred = pred.view(-1)
-        pred_cap = pred_cap.view(-1)
-
-        labels = labels.view(-1)
-        capitalization = capitalization.view(-1)
 
         self.log("train_loss", loss)
         self.log("train_f1_all", f1_score(pred, labels), on_step=True, on_epoch=False)
@@ -45,21 +47,23 @@ class LitTwoHead(LitPunctuator):
         input_ids, labels, attention_mask, labels_mask, capitalization = batch
         pred, pred_cap = self(input_ids, attention_mask)
 
-        if self.use_crf:
-            val_loss = self.punctuator.log_likelihood(input_ids, attention_mask, labels, capitalization)
-        else:
-            val_loss = F.cross_entropy(pred, labels) + F.cross_entropy(pred_cap, capitalization)
-
         pred_size = pred.size()
         pred_cap_size = pred_cap.size()
         labels_size = labels.size()
         capitalization_size = capitalization.size()
 
-        pred = pred.view(-1)
-        pred_cap = pred_cap.view(-1)
-
-        labels = labels.view(-1)
-        capitalization = capitalization.view(-1)
+        if self.use_crf:
+            val_loss = self.punctuator.log_likelihood(input_ids, attention_mask, labels, capitalization)
+            pred = pred.view(-1, pred.shape[2])
+            pred_cap = pred_cap.view(-1, pred_cap.shape[2])
+            labels = labels.view(-1)
+            capitalization = capitalization.view(-1)
+        else:
+            pred = pred.view(-1, pred.shape[2])
+            pred_cap = pred_cap.view(-1, pred_cap.shape[2])
+            labels = labels.view(-1)
+            capitalization = capitalization.view(-1)
+            val_loss = F.cross_entropy(pred, labels) + F.cross_entropy(pred_cap, capitalization)
 
         self.log("val_loss", val_loss)
         self.log("val_f1_all", f1_score(pred, labels), on_step=True, on_epoch=False)
@@ -96,7 +100,15 @@ class LitTwoHead(LitPunctuator):
 
         if self.use_crf:
             test_loss = self.punctuator.log_likelihood(input_ids, attention_mask, labels, capitalization)
+            pred = pred.view(-1, pred.shape[2])
+            pred_cap = pred_cap.view(-1, pred_cap.shape[2])
+            labels = labels.view(-1)
+            capitalization = capitalization.view(-1)
         else:
+            pred = pred.view(-1, pred.shape[2])
+            pred_cap = pred_cap.view(-1, pred_cap.shape[2])
+            labels = labels.view(-1)
+            capitalization = capitalization.view(-1)
             test_loss = F.cross_entropy(pred, labels) + F.cross_entropy(pred_cap, capitalization)
 
         pred = pred.view(-1)

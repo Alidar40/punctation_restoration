@@ -29,8 +29,8 @@ class TwoHeadCRF(nn.Module):
 
         batch_size, seq_len = input_ids.size()
 
-        y_pred = torch.zeros((batch_size, seq_len, len(char2label)))
-        y_pred_cap = torch.zeros((batch_size, seq_len, 3))
+        y_pred = torch.zeros((batch_size, seq_len, len(char2label))).to(x.device)
+        y_pred_cap = torch.zeros((batch_size, seq_len, 3)).to(x.device)
         for i in range(batch_size):
             dec = dec_out[i] + [0 for _ in range(seq_len - len(dec_out[i]))]
             dec_cap = dec_out_cap[i] + [0 for _ in range(seq_len - len(dec_out_cap[i]))]

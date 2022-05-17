@@ -23,10 +23,14 @@ def remove_consec_duplicates(s):
 
 
 def clean_up(text):
-    text = text.strip().replace('\n', ' ').replace('\'', '"')\
+    text = text.strip()\
+        .replace('\n', ' ')\
+        .replace('\'', '"')\
         .replace('«', '\"').replace('»', '\"') \
         .replace('[', '\"').replace(']', '\"') \
-        .replace('—', '-')
+        .replace('—', '-') \
+        .replace('ё', 'е')\
+        .replace('Ё', 'Е')
     text = re.sub(r'[^a-zA-ZА-Яа-я0-9.,!?"()\- ]', '', text)
 
     if text[-1] not in ['.', ',', '!', '?']:

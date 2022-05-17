@@ -25,11 +25,12 @@ class LitPunctuator(pl.LightningModule):
 
         if self.use_crf:
             loss = self.punctuator.log_likelihood(input_ids, attention_mask, labels)
+            pred = pred.view(-1, pred.shape[2])
+            labels = labels.view(-1)
         else:
+            pred = pred.view(-1, pred.shape[2])
+            labels = labels.view(-1)
             loss = F.cross_entropy(pred, labels)
-
-        pred = pred.view(-1)
-        labels = labels.view(-1)
 
         self.log("train_loss", loss)
         self.log("train_f1_all", f1_score(pred, labels), on_step=True, on_epoch=False)
@@ -43,16 +44,17 @@ class LitPunctuator(pl.LightningModule):
         input_ids, labels, attention_mask, labels_mask = batch
         pred = self(input_ids, attention_mask)
 
-        if self.use_crf:
-            val_loss = self.punctuator.log_likelihood(input_ids, attention_mask, labels)
-        else:
-            val_loss = F.cross_entropy(pred, labels)
-
         pred_size = pred.size()
         labels_size = labels.size()
 
-        pred = pred.view(-1)
-        labels = labels.view(-1)
+        if self.use_crf:
+            val_loss = self.punctuator.log_likelihood(input_ids, attention_mask, labels)
+            pred = pred.view(-1, pred.shape[2])
+            labels = labels.view(-1)
+        else:
+            pred = pred.view(-1, pred.shape[2])
+            labels = labels.view(-1)
+            val_loss = F.cross_entropy(pred, labels)
 
         self.log("val_loss", val_loss)
         self.log("val_f1_all", f1_score(pred, labels), on_step=False, on_epoch=True)
@@ -82,11 +84,12 @@ class LitPunctuator(pl.LightningModule):
 
         if self.use_crf:
             test_loss = self.punctuator.log_likelihood(input_ids, attention_mask, labels)
+            pred = pred.view(-1, pred.shape[2])
+            labels = labels.view(-1)
         else:
+            pred = pred.view(-1, pred.shape[2])
+            labels = labels.view(-1)
             test_loss = F.cross_entropy(pred, labels)
-
-        pred = pred.view(-1)
-        labels = labels.view(-1)
 
         self.log("test_loss", test_loss)
         self.log("test_f1_all", f1_score(pred, labels), on_step=False, on_epoch=True)
