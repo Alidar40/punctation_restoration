@@ -12,6 +12,9 @@ def get_model(model_name, encoder_model_name):
     elif model_name == "two_head":
         model = TwoHead(encoder_model_name)
         two_head = True
+    elif model_name == "two_head_linear":
+        model = TwoHeadLinear(encoder_model_name)
+        two_head = True
     else:
         raise NotImplemented("Such a model is not implemented")
 
