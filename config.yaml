@@ -7,6 +7,7 @@ accelerator: "gpu"
 
 model: "base_punctuator"
 encoder: "cointegrated/rubert-tiny2" # sberbank-ai/ruRoberta-large cointegrated/rubert-tiny2 DeepPavlov/rubert-base-cased
+use_crf: False
 augment_rate: 0.2
 ckpt_path: checkpoints/path/to/checkpoint.ckpt
 continue_from_ckpt: false

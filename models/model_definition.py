@@ -2,10 +2,12 @@ import transformers
 from tokenizers import pre_tokenizers
 
 from models.base_punctuator import BasePunctuator
-from models.two_head import TwoHead
+from models.base_punctuator_crf import BasePunctuatorCRF
+from models.two_head import TwoHead, TwoHeadLinear
+from models.two_head_crf import TwoHeadCRF
 
 
-def get_model(model_name, encoder_model_name):
+def get_model(model_name, encoder_model_name, use_crf):
     if model_name == "base_punctuator":
         model = BasePunctuator(encoder_model_name)
         two_head = False
@@ -17,6 +19,11 @@ def get_model(model_name, encoder_model_name):
         two_head = True
     else:
         raise NotImplemented("Such a model is not implemented")
+
+    if use_crf and two_head:
+        model = TwoHeadCRF(model)
+    if use_crf and not two_head:
+        model = BasePunctuatorCRF(model)
 
     return model, two_head
 

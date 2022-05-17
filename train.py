@@ -12,6 +12,7 @@ from config import config
 if __name__ == "__main__":
     SEED = config["seed"]
     MODEL = config["model"]
+    USE_CRF = config["use_crf"]
     ENCODER = config["encoder"]
     CONTINUE_FROM_CKPT = config["continue_from_ckpt"]
     CKPT_PATH = config["ckpt_path"]
@@ -23,12 +24,12 @@ if __name__ == "__main__":
 
     seed_everything(SEED)
 
-    model, is_two_head = get_model(MODEL, ENCODER)
+    model, is_two_head = get_model(MODEL, ENCODER, USE_CRF)
     tokenizer = get_tokenizer(ENCODER)
     if is_two_head:
-        lit_model = LitTwoHead(model, tokenizer)
+        lit_model = LitTwoHead(model, tokenizer, USE_CRF)
     else:
-        lit_model = LitPunctuator(model, tokenizer)
+        lit_model = LitPunctuator(model, tokenizer, USE_CRF)
 
     train_dataloader, val_dataloader, test_dataloader = get_dataloaders(tokenizer)
 

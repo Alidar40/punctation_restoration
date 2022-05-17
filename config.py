@@ -5,6 +5,8 @@ config = yaml.safe_load(open("config.yaml", "rb"))
 
 if config['wandb']['name'] == 'as_model':
     config['wandb']['name'] = config['model']
+    if config['use_crf']:
+        config['wandb']['name'] += '_crf'
 
 char2label = {
     ' ': 0,
@@ -21,3 +23,4 @@ char2label = {
 label2char = dict()
 for key, value in char2label.items():
     label2char[value] = key
+
