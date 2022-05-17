@@ -5,6 +5,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from data_processing.lentaset import get_dataloaders
 from models.model_definition import get_model, get_tokenizer
 from models.lit_punctuator import LitPunctuator
+from models.lit_two_head import LitTwoHead
 from utils.initialization import seed_everything
 from config import config
 
@@ -22,9 +23,12 @@ if __name__ == "__main__":
 
     seed_everything(SEED)
 
-    model = get_model(MODEL, ENCODER)
+    model, is_two_head = get_model(MODEL, ENCODER)
     tokenizer = get_tokenizer(ENCODER)
-    lit_model = LitPunctuator(model, tokenizer)
+    if is_two_head:
+        lit_model = LitTwoHead(model, tokenizer)
+    else:
+        lit_model = LitPunctuator(model, tokenizer)
 
     train_dataloader, val_dataloader, test_dataloader = get_dataloaders(tokenizer)
 

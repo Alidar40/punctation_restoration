@@ -22,7 +22,7 @@ class LitPunctuator(pl.LightningModule):
         return self.punctuator(input_ids, attention_mask)
 
     def training_step(self, batch, batch_idx):
-        input_ids, labels, attention_mask, labels_mask = batch
+        input_ids, labels, attention_mask, labels_mask, _ = batch
         pred = self(input_ids, attention_mask)
         pred = pred.view(-1, pred.shape[2])
         labels = labels.view(-1)
@@ -36,7 +36,7 @@ class LitPunctuator(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        input_ids, labels, attention_mask, labels_mask = batch
+        input_ids, labels, attention_mask, labels_mask, _ = batch
         pred = self(input_ids, attention_mask)
         pred_size = pred.size()
         labels_size = labels.size()
@@ -73,7 +73,7 @@ class LitPunctuator(pl.LightningModule):
         return val_loss
 
     def test_step(self, batch, batch_idx):
-        input_ids, labels, attention_mask, labels_mask = batch
+        input_ids, labels, attention_mask, labels_mask, _ = batch
         pred = self(input_ids, attention_mask)
         pred = pred.view(-1, pred.shape[2])
         labels = labels.view(-1)

@@ -36,47 +36,52 @@ class LentaSet(Dataset):
         return len(self.texts)
 
     def __getitem__(self, idx):
-        x, y, attention_mask, y_mask = self.parse_text(self.texts[idx])
+        x, y, attention_mask, y_mask, capitalization = self.parse_text(self.texts[idx])
 
         if self.is_train and self.augment_rate > 0:
-            x, y, attn_mask, y_mask = self.augment(x, y, y_mask)
+            x, y, attn_mask, y_mask, capitalization = self.augment(x, y, y_mask, capitalization)
 
         x = torch.tensor(x)
         y = torch.tensor(y)
         attention_mask = torch.tensor(attention_mask)
         y_mask = torch.tensor(y_mask)
+        capitalization = torch.tensor(capitalization)
 
-        return x, y, attention_mask, y_mask
+        return x, y, attention_mask, y_mask, capitalization
 
-    def augment(self, x, y, y_mask):
+    def augment(self, x, y, y_mask, capitalization):
         x_aug = []
         y_aug = []
         attention_mask_aug = []
         y_mask_aug = []
+        capitalization_aug = []
         for i in range(len(x)):
             r = np.random.rand()
             if r < self.augment_rate:
                 unk_token = self.tokenizer('[UNK]', add_special_tokens=False)['input_ids'][0]
                 vocab_size = self.tokenizer.vocab_size
-                augmentations[self.augment_type](x, y, y_mask, x_aug, y_aug, y_mask_aug, i, vocab_size, unk_token)
+                augmentations[self.augment_type](x, y, y_mask, capitalization, x_aug, y_aug, y_mask_aug, capitalization_aug, i, vocab_size, unk_token)
             else:
                 x_aug.append(x[i])
                 y_aug.append(y[i])
                 y_mask_aug.append(y_mask[i])
+                capitalization_aug.append(capitalization[i])
 
         if len(x_aug) > self.sequence_len:
             # len increased due to insert
             x_aug = x_aug[0:self.sequence_len]
             y_aug = y_aug[0:self.sequence_len]
             y_mask_aug = y_mask_aug[0:self.sequence_len]
+            capitalization_aug = capitalization_aug[0:self.sequence_len]
         elif len(x_aug) < self.sequence_len:
             # len decreased due to delete
             x_aug = x_aug + self.tokenizer('[PAD]', add_special_tokens=False)['input_ids'] * (self.sequence_len - len(x_aug))
             y_aug = y_aug + [0 for _ in range(self.sequence_len - len(y_aug))]
             y_mask_aug = y_mask_aug + [0 for _ in range(self.sequence_len - len(y_mask_aug))]
             attention_mask_aug = attention_mask_aug + [0 for _ in range(self.sequence_len - len(attention_mask_aug))]
+            capitalization_aug = capitalization_aug + [0 for _ in range(self.sequence_len - len(capitalization_aug))]
 
-        return x_aug, y_aug, attention_mask_aug, y_mask_aug
+        return x_aug, y_aug, attention_mask_aug, y_mask_aug, capitalization_aug
 
     def parse_text(self, text):
         text = text.strip().replace('\n', ' ')
@@ -103,7 +108,13 @@ class LentaSet(Dataset):
                 punct_mark = label_strip(split[i + 1])
             if word == '':
                 word = ' '
-            capitalized = word[0].isupper()
+
+            if word[0].isupper():
+                capitalization_label = 1
+            elif word.isupper():
+                capitalization_label = 2
+            else:
+                capitalization_label = 0
 
             encoded = self.tokenizer(word.lower(), add_special_tokens=False)
             tokenized_word = encoded['input_ids']
@@ -116,17 +127,21 @@ class LentaSet(Dataset):
             attention_mask.extend(encoded['attention_mask'])
             y.extend([char2label[punct_mark]] * num_subtokens)
             y_mask.extend([1] * num_subtokens)
+            capitalization.extend([capitalization_label] * num_subtokens)
 
         x.extend(self.tokenizer('[SEP]', add_special_tokens=False)['input_ids'])
         y.append(0)
         attention_mask.append(1)
         y_mask.append(1)
+        capitalization.append(0)
         if len(x) < self.sequence_len:
             x = x + self.tokenizer('[PAD]', add_special_tokens=False)['input_ids'] * (self.sequence_len - len(x))
             y = y + [0 for _ in range(self.sequence_len - len(y))]
             y_mask = y_mask + [0 for _ in range(self.sequence_len - len(y_mask))]
             attention_mask = attention_mask + [0 for _ in range(self.sequence_len - len(attention_mask))]
-        return x, y, attention_mask, y_mask
+            capitalization = capitalization + [0 for _ in range(self.sequence_len - len(capitalization))]
+
+        return x, y, attention_mask, y_mask, capitalization
 
 
 def label_strip(label):
