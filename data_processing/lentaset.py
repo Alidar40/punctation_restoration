@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 
 from data_processing.augmentations import augmentations
-from utils.text import clean_up
+from utils.text import clean_up, remove_consec_duplicates
 from config import config, char2label
 
 
@@ -49,6 +49,10 @@ class LentaSet(Dataset):
         capitalization = torch.tensor(capitalization)
 
         return x, y, attention_mask, y_mask, capitalization
+
+    def get_raw_text(self, idx):
+        text = re.sub(r'[^a-zA-ZА-Яа-яёЁ0-9 ]', ' ', self.texts[idx])
+        return remove_consec_duplicates(text).lower()
 
     def augment(self, x, y, y_mask, capitalization):
         x_aug = []

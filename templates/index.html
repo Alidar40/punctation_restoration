@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        form {
+            width: 98%;
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            border-color: #0d0d00;
+            font-size: 16pt;
+            text-align: justify;
+        }
+
+        p {
+            width: 98%;
+            text-align: center;
+            margin: 0 auto;
+            font-size: 16pt;
+            text-align: justify;
+        }
+
+        .header {
+            font-weight: bold;
+        }
+
+        .btn {
+            position: relative;
+            box-shadow: 0px 2px 5px -1px #333;
+
+            background:linear-gradient(to bottom, #0cbbc8 5%, #008995 100%);
+            background-color:#0cbbc8;
+            border-radius:6px;
+            border:1px solid #ffffff;
+            display:inline-block;
+            cursor:pointer;
+            color:#ffffff;
+            font-family:Arial;
+            font-size:15px;
+            font-weight:bold;
+            padding:6px 24px;
+            text-decoration:none;
+        }
+        .btn:hover {
+            background:linear-gradient(to bottom, #008995 5%, #0cbbc8 100%);
+            background-color:#008995;
+        }
+        .btn:active {
+            position:relative;
+            top:1px;
+        }
+    </style>
+    <script>
+        function textAreaAdjust(element) {
+            element.style.height = "1px";
+            element.style.height = (25+element.scrollHeight)+"px";
+        }
+    </script>
+</head>
+<body>
+    <form action="/" datatype="application/json" method="post">
+        <textarea name="input_text" id="input_text" rows="10" cdkTextareaAutosize cdkAutosizeMinRows="10" cdkAutosizeMaxRows="200"></textarea>
+        <br/><br/>
+        <input class="btn" type="submit" type="button" value="Запуск!">
+    </form>
+    <br/>
+
+    {%if result%}
+        <div>
+            <p class="header">До:</p>
+            <p>{{result.input}}</p>
+
+            <br/><br/>
+
+            <p class="header">После:</p>
+            <p>{{result.predicted}}</p>
+        </div>
+    {% endif %}
+</body>
+</html>
