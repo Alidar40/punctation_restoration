@@ -1,0 +1,13 @@
+-f https://download.pytorch.org/whl/cu113
+torch==1.11.0+cu113
+pytorch-lightning==1.6.3
+torchmetrics==0.8.2
+pytorch-crf==0.7.2
+transformers==4.19.1
+wandb==0.12.16
+numpy==1.22.3
+pandas==1.4.2
+scikit-learn==1.1.0
+uvicorn==0.17.6
+fastapi==0.78.0
+pydantic==1.9.1
