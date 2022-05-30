@@ -12,4 +12,4 @@ MIPT Course project
 ```python train.py```
 
 ## Run server
-```python server.py```
+```uvicorn server:app```
