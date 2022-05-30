@@ -91,7 +91,7 @@ class LentaSet(Dataset):
     def parse_text(self, text):
         text = clean_up(text)
 
-        split = re.split(r'([ .,!?"()\-])', text)
+        split = re.split(r'([ .,!?\'()\-])', text)
 
         x = self.tokenizer('[CLS]', add_special_tokens=False)['input_ids']
         attention_mask = [1]
@@ -107,10 +107,10 @@ class LentaSet(Dataset):
             if word == '':
                 word = ' '
 
-            if word[0].isupper():
-                capitalization_label = 1
-            elif word.isupper():
+            if word.isupper():
                 capitalization_label = 2
+            elif word[0].isupper():
+                capitalization_label = 1
             else:
                 capitalization_label = 0
 
@@ -150,15 +150,13 @@ def label_strip(label):
 
 
 def get_dataloaders(tokenizer):
-    texts = np.array([])
-    # texts = list()
-    for chunk in pd.read_csv(DATASET_PATH, chunksize=CHUNK_SIZE):
-        texts = np.concatenate((texts, chunk["text"].to_list()))
-        # texts.extend(chunk["text"].to_list())
-        if DEV_MODE:
+    texts = list()
+    if DEV_MODE:
+        for chunk in pd.read_csv(DATASET_PATH, chunksize=CHUNK_SIZE):
+            texts = chunk.dropna()["text"].to_numpy()
             break
-        gc.collect()
-    # texts = np.array(texts)
+    else:
+        texts = pd.read_csv(DATASET_PATH).dropna()["text"].to_numpy()
 
     indexes = list(range(0, len(texts)))
 

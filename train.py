@@ -38,14 +38,14 @@ if __name__ == "__main__":
     checkpoint_callback = ModelCheckpoint(
         save_last=True,
         save_top_k=3,
-        monitor="val_loss",
+        monitor="loss/val_loss",
         mode="min",
         filename=MODEL+"-{epoch:02d}-{val_loss:.2f}",
         dirpath=f"./checkpoints/{wandb_logger.experiment.id[-8:]}/"
     )
 
     early_stopping = EarlyStopping(
-        monitor="val_loss", min_delta=0.01, mode="min", patience=3
+        monitor="loss/val_loss", min_delta=0.01, mode="min", patience=3
     )
 
     trainer = pl.Trainer(

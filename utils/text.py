@@ -25,19 +25,19 @@ def remove_consec_duplicates(s):
 def clean_up(text):
     text = text.strip()\
         .replace('\n', ' ')\
-        .replace('\'', '"')\
-        .replace('«', '\"').replace('»', '\"') \
-        .replace('[', '\"').replace(']', '\"') \
-        .replace('—', '-') \
-        .replace('ё', 'е')\
-        .replace('Ё', 'Е')
-    text = re.sub(r'[^a-zA-ZА-Яа-я0-9.,!?"()\- ]', '', text)
+        .replace('\"', '\'')\
+        .replace('«', '\'').replace('»', '\'') \
+        .replace('[', '\(').replace(']', '\)') \
+        .replace('—', '-')
+        # .replace('ё', 'е')\
+        # .replace('Ё', 'Е')
+    text = re.sub(r'[^a-zA-ZА-Яа-яёЁ0-9.,!?\'()\- ]', ' ', text)
 
     if text[-1] not in ['.', ',', '!', '?']:
         text += '.'
 
     text = remove_consec_duplicates(text)
-    split = re.split(r'([ .,!?"()\-]+)', text)
+    split = re.split(r'([ .,!?\'()\-]+)', text)
     new_split = list()
     for s in split:
         s = s.strip()
@@ -54,7 +54,7 @@ def clean_up(text):
 def pad_punct(punct):
     if punct in [',', '.', '!', '?']:
         punct = punct + ' '
-    elif punct in ['"', '(', ')']:
+    elif punct in ['\'', '(', ')']:
         punct = ' ' + punct
     elif punct in ['-']:
         punct = ' ' + punct + ' '

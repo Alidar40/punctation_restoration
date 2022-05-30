@@ -30,16 +30,7 @@ class LitTwoHead(LitPunctuator):
             capitalization = capitalization.view(-1)
             loss = F.cross_entropy(pred, labels) + F.cross_entropy(pred_cap, capitalization)
 
-        self.log("train_loss", loss)
-        self.log("train_f1_all", f1_score(pred, labels), on_step=True, on_epoch=False)
-        self.log("train_f1", f1_score(pred, labels, ignore_index=0), on_step=True, on_epoch=False)
-        self.log("train_precision", precision(pred, labels, ignore_index=0), on_step=True, on_epoch=False)
-        self.log("train_recall", recall(pred, labels, ignore_index=0), on_step=True, on_epoch=False)
-
-        self.log("train_f1_cap_all", f1_score(pred_cap, capitalization), on_step=True, on_epoch=False)
-        self.log("train_f1_cap", f1_score(pred_cap, capitalization, ignore_index=0), on_step=True, on_epoch=False)
-        self.log("train_precision_cap", precision(pred_cap, capitalization, ignore_index=0), on_step=True, on_epoch=False)
-        self.log("train_recall_cap", recall(pred_cap, capitalization, ignore_index=0), on_step=True, on_epoch=False)
+        self.log_metrics("train", loss, pred, labels, pred_cap, capitalization)
 
         return loss
 
@@ -65,16 +56,7 @@ class LitTwoHead(LitPunctuator):
             capitalization = capitalization.view(-1)
             val_loss = F.cross_entropy(pred, labels) + F.cross_entropy(pred_cap, capitalization)
 
-        self.log("val_loss", val_loss)
-        self.log("val_f1_all", f1_score(pred, labels), on_step=True, on_epoch=False)
-        self.log("val_f1", f1_score(pred, labels, ignore_index=0), on_step=True, on_epoch=False)
-        self.log("val_precision", precision(pred, labels, ignore_index=0), on_step=True, on_epoch=False)
-        self.log("val_recall", recall(pred, labels, ignore_index=0), on_step=True, on_epoch=False)
-
-        self.log("val_f1_cap_all", f1_score(pred_cap, capitalization), on_step=True, on_epoch=False)
-        self.log("val_f1_cap", f1_score(pred_cap, capitalization, ignore_index=0), on_step=True, on_epoch=False)
-        self.log("val_precision_cap", precision(pred_cap, capitalization, ignore_index=0), on_step=True, on_epoch=False)
-        self.log("val_recall_cap", recall(pred_cap, capitalization, ignore_index=0), on_step=True, on_epoch=False)
+        self.log_metrics("val", val_loss, pred, labels, pred_cap, capitalization)
 
         if batch_idx == 1:
             columns = ["Reference", "Predicted"]
@@ -111,22 +93,7 @@ class LitTwoHead(LitPunctuator):
             capitalization = capitalization.view(-1)
             test_loss = F.cross_entropy(pred, labels) + F.cross_entropy(pred_cap, capitalization)
 
-        pred = pred.view(-1)
-        pred_cap = pred_cap.view(-1)
-
-        labels = labels.view(-1)
-        capitalization = capitalization.view(-1)
-
-        self.log("test_loss", test_loss)
-        self.log("test_f1_all", f1_score(pred, labels), on_step=False, on_epoch=True)
-        self.log("test_f1", f1_score(pred, labels, ignore_index=0), on_step=False, on_epoch=True)
-        self.log("test_precision", precision(pred, labels, ignore_index=0), on_step=False, on_epoch=True)
-        self.log("test_recall", recall(pred, labels, ignore_index=0), on_step=False, on_epoch=True)
-
-        self.log("test_f1_cap_all", f1_score(pred_cap, capitalization), on_step=False, on_epoch=True)
-        self.log("test_f1_cap", f1_score(pred_cap, capitalization, ignore_index=0), on_step=False, on_epoch=True)
-        self.log("test_precision_cap", precision(pred_cap, capitalization, ignore_index=0), on_step=False, on_epoch=True)
-        self.log("test_recall_cap", recall(pred_cap, capitalization, ignore_index=0), on_step=False, on_epoch=True)
+        self.log_metrics("test", test_loss, pred, labels, pred_cap, capitalization)
 
         return pred, labels, pred_cap
 
@@ -141,3 +108,21 @@ class LitTwoHead(LitPunctuator):
         pred_sentence = get_text_with_cap_from_predictions(tokens, pred_labels, pred_capitalization)
 
         return pred_sentence
+
+    def log_metrics(self, split: str, loss, pred, labels, pred_cap, capitalization):
+        if split == "train":
+            on_step = True
+            on_epoch = False
+        else:
+            on_step = False
+            on_epoch = True
+        self.log(f"loss/{split}_loss", loss)
+        self.log(f"{split}/punct/f1_all", f1_score(pred, labels), on_step=on_step, on_epoch=on_epoch)
+        self.log(f"{split}/punct/f1", f1_score(pred, labels, ignore_index=0), on_step=on_step, on_epoch=on_epoch)
+        self.log(f"{split}/punct/precision", precision(pred, labels, ignore_index=0), on_step=on_step, on_epoch=on_epoch)
+        self.log(f"{split}/punct/recall", recall(pred, labels, ignore_index=0), on_step=on_step, on_epoch=on_epoch)
+
+        self.log(f"{split}/capitalization/f1_all", f1_score(pred_cap, capitalization), on_step=on_step, on_epoch=on_epoch)
+        self.log(f"{split}/capitalization/f1", f1_score(pred_cap, capitalization, ignore_index=0), on_step=on_step, on_epoch=on_epoch)
+        self.log(f"{split}/capitalization/precision", precision(pred_cap, capitalization, ignore_index=0), on_step=on_step, on_epoch=on_epoch)
+        self.log(f"{split}/capitalization/recall", recall(pred_cap, capitalization, ignore_index=0), on_step=on_step, on_epoch=on_epoch)
