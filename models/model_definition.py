@@ -3,7 +3,7 @@ from tokenizers import pre_tokenizers
 
 from models.base_punctuator import BasePunctuator
 from models.base_punctuator_crf import BasePunctuatorCRF
-from models.two_head import TwoHead, TwoHeadLinear
+from models.two_head import TwoHead, TwoHeadBaseline, TwoHeadBaselineLinear, TwoHeadLinear
 from models.two_head_crf import TwoHeadCRF
 
 
@@ -13,6 +13,12 @@ def get_model(model_name, encoder_model_name, use_crf):
         two_head = False
     elif model_name == "two_head":
         model = TwoHead(encoder_model_name)
+        two_head = True
+    elif model_name == "two_head_baseline":
+        model = TwoHeadBaseline(encoder_model_name)
+        two_head = True
+    elif model_name == "two_head_baseline_linear":
+        model = TwoHeadBaselineLinear(encoder_model_name)
         two_head = True
     elif model_name == "two_head_linear":
         model = TwoHeadLinear(encoder_model_name)
