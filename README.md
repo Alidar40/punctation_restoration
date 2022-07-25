@@ -1,6 +1,8 @@
 # punctation_restoration
 MIPT Course project
 
+[Презентация](https://docs.google.com/presentation/d/1_Y0DnY4xu-t4wb0QwQd38zfFLz17LDAZT007oSUTLos/edit?usp=sharing)
+
 ## Installation
 1) ```python 3.8.10``` was used in this work
 2) Check PyTorch version in ```requirements.txt``` according to your CUDA version
